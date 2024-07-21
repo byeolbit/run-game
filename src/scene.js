@@ -60,7 +60,7 @@ export function initScene() {
   window.addEventListener("resize", () => onWindowResize(camera, renderer));
   onWindowResize(camera, renderer); // 초기 크기 설정을 위해 호출
 
-  const destroy = () => {
+  const destroyScene = (() => {
     window.removeEventListener("resize", onWindowResize);
     while (scene.children.length > 0) {
       scene.remove(scene.children[0]);
@@ -72,9 +72,9 @@ export function initScene() {
       directionalLight.remove(directionalLight.children[0]);
     }
     renderer.dispose();
-  };
+  }).bind(this);
 
-  return { scene, camera, renderer, directionalLight, destroy };
+  return { scene, camera, renderer, directionalLight, destroyScene };
 }
 
 function onWindowResize(camera, renderer) {
@@ -161,7 +161,7 @@ export function animate(
   function render(currentTime) {
     if (game.isGameOver) return;
 
-    const playerRadius = 0.5; // 플레이어의 대략적인 반경
+    const playerRadius = 0.3; // 플레이어의 대략적인 반경
 
     requestAnimationFrame(render);
 
@@ -184,8 +184,6 @@ export function animate(
     for (const obstacle of nearbyObstacles) {
       const distance = player.position.distanceTo(obstacle.position);
       if (distance < playerRadius + 0.5) {
-        // 0.5는 장애물의 대략적인 반경
-        console.log("Collision detected!");
         game.gameOver();
         return;
       }

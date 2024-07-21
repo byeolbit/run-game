@@ -1,7 +1,7 @@
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import * as THREE from "three";
 
-export function loadPlayer(scene) {
+export function loadPlayerModel() {
   return new Promise((resolve, reject) => {
     const loader = new GLTFLoader();
     loader.load(
@@ -33,13 +33,7 @@ export function loadPlayer(scene) {
             }
           }
         });
-
-        scene.add(playerWrapper);
-        const destroyPlayerInputEvent = setupControls(
-          playerWrapper,
-          playerModel
-        );
-        resolve({ player: playerWrapper, onDestroy: destroyPlayerInputEvent });
+        resolve(playerWrapper);
       },
       undefined,
       function (error) {
@@ -50,7 +44,13 @@ export function loadPlayer(scene) {
   });
 }
 
-function setupControls(player) {
+export function initPlayer(playerModel, scene) {
+  playerModel.position.set(0, 0, 0);
+  scene.add(playerModel);
+  return setupControls(playerModel);
+}
+
+export function setupControls(player) {
   let velocityX = 0;
   let velocityZ = 0;
   const maxSpeed = 0.15;
@@ -191,6 +191,13 @@ function setupControls(player) {
   function destroy() {
     velocityX = 0;
     velocityZ = 0;
+    leftPressed = false;
+    rightPressed = false;
+    upPressed = false;
+    downPressed = false;
+    touchStartX = 0;
+    touchStartY = 0;
+    isTouching = false;
     document.removeEventListener("keydown", keydownHandler);
     document.removeEventListener("keyup", keyupHandler);
     document.removeEventListener("touchstart", handleTouchStart);

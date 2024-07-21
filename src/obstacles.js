@@ -11,15 +11,15 @@ const obstacleModels = [
   { name: "table", path: "/resources/models/obstacles/table.gltf" },
 ];
 
-const loadedModels = {};
-
 function getRandomX() {
   const values = [-3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7];
   const randomIndex = Math.floor(Math.random() * values.length);
   return values[randomIndex];
 }
 
-async function loadAllModels() {
+export async function loadAllObstacleModels() {
+  const loadedModels = {};
+
   console.log("Starting to load all models...");
   const promises = obstacleModels.map(
     (model) =>
@@ -42,21 +42,22 @@ async function loadAllModels() {
   );
   await Promise.all(promises);
   console.log("All models loaded successfully.");
+  return loadedModels;
 }
 
-export async function createObstacles(scene) {
-  await loadAllModels();
-
+export async function createObstacles(scene, loadedModels) {
   const obstacles = [];
-  const objectPool = [];
-  let maxObstacles = 50;
-  const obstacleDistance = 20;
+  const obstaclePool = [];
   let difficultyFactor = 6; // 난이도 팩터 추가
+
+  let obstacleReleaseInterval = 0.2;
+  let lastObstacleReleaseTime = 0;
 
   function createObstacle(z) {
     let obstacle;
-    if (objectPool.length > 0) {
-      obstacle = objectPool.pop();
+    if (obstaclePool.length > 0) {
+      obstacle = obstaclePool.pop();
+      obstacle.position.set(getRandomX(), 0, z);
     } else {
       const randomModel =
         obstacleModels[Math.floor(Math.random() * obstacleModels.length)];
@@ -79,7 +80,7 @@ export async function createObstacles(scene) {
     if (index > -1) {
       obstacles.splice(index, 1);
       scene.remove(obstacle);
-      objectPool.push(obstacle);
+      obstaclePool.push(obstacle);
     }
   }
 
@@ -97,10 +98,20 @@ export async function createObstacles(scene) {
       const screenEdgeZ = playerZ - 15; // 플레이어로부터 10 유닛 앞에 장애물 생성
 
       // 새 장애물 생성
-      const obstaclesNeeded = Math.min(80, Math.floor(difficultyFactor * 2));
-      while (obstacles.length < obstaclesNeeded * 2 && playerZ < -10) {
+      const obstaclesNeeded = Math.min(80, Math.floor(difficultyFactor * 3));
+
+      const currentTime = elapsedTime / 1000;
+      const isInUpdateTime =
+        currentTime - lastObstacleReleaseTime > obstacleReleaseInterval;
+
+      while (
+        isInUpdateTime &&
+        playerZ < -10 &&
+        obstacles.length < obstaclesNeeded * 2
+      ) {
         const newZ = screenEdgeZ;
-        createObstacle(newZ - Math.floor(Math.random() * 10));
+        createObstacle(newZ - Math.floor(Math.random() * 10) * 4);
+        lastObstacleReleaseTime = currentTime;
       }
 
       // 지나간 장애물 제거

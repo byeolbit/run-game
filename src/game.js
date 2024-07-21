@@ -1,21 +1,55 @@
-import { initGame } from "./main.js";
+import { createStartScreen } from "./startScreen";
+import { initScene, animate } from "./scene";
+import { createObstacles } from "./obstacles";
+import { initPlayer } from "./player";
 
 export class Game {
-  constructor(onGameOver) {
+  constructor(obstacleModels, playerModel) {
     this.score = 0;
     this.isGameOver = false;
     this.gameOverReason = "";
     this.startTime = Date.now();
     this.gameStartTime = Date.now();
     this.playerSpeed = 0.01;
-    this.scoreElement = document.getElementById("scoreValue");
-    this.scoreElement.style.display = "block";
-    this.onGameOver = onGameOver;
+    this.scoreElement = document.getElementById("scoreContainer");
+    this.scoreElement.style.display = "none";
+    this.onGameOver = () => {};
     this.gameOverScreen = document.getElementById("gameOverScreen");
     this.gameOverReasonElement = document.getElementById("gameOverReason");
     this.finalScoreElement = document.getElementById("finalScore");
     this.restartButton = document.getElementById("restartButton");
     this.restartButton.addEventListener("click", () => this.restart());
+    this.obstacleModels = obstacleModels;
+    this.playerModel = playerModel;
+  }
+
+  async initGame() {
+    const { scene, camera, renderer, directionalLight, destroyScene } =
+      initScene();
+    const destroyPlayerControl = initPlayer(this.playerModel, scene);
+    const obstacleController = await createObstacles(
+      scene,
+      this.obstacleModels
+    );
+    this.scoreElement.style.display = "block";
+    this.onGameOver = () => {
+      destroyScene();
+      this.scoreElement.style.display = "none";
+      destroyPlayerControl();
+    };
+    animate(
+      scene,
+      camera,
+      renderer,
+      this.playerModel,
+      directionalLight,
+      obstacleController,
+      this
+    );
+  }
+
+  showStartScreen() {
+    createStartScreen(() => this.initGame());
   }
 
   updateScore() {
@@ -49,6 +83,6 @@ export class Game {
     this.gameStartTime = Date.now();
     this.gameOverScreen.style.display = "none";
     this.scoreElement.textContent = "0 M";
-    initGame();
+    this.initGame();
   }
 }
