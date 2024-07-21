@@ -65,7 +65,7 @@ export function setupControls(player) {
   let touchStartX = 0;
   let touchStartY = 0;
   let isTouching = false;
-  const touchSensitivity = 0.08; // 터치 민감도 조절 (값이 작을수록 덜 민감)
+  const touchSensitivity = 0.15; // 터치 민감도 조절 (값이 작을수록 덜 민감)
 
   function keydownHandler(event) {
     switch (event.code) {

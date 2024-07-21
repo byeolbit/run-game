@@ -14,9 +14,11 @@ export class Game {
     this.scoreElement = document.getElementById("scoreContainer");
     this.scoreElement.style.display = "none";
     this.onGameOver = () => {};
+    this.beforeGameReset = () => {};
     this.gameOverScreen = document.getElementById("gameOverScreen");
     this.gameOverReasonElement = document.getElementById("gameOverReason");
     this.finalScoreElement = document.getElementById("finalScore");
+    this.lastFrameEl = document.getElementById("gameOverImage");
     this.restartButton = document.getElementById("restartButton");
     this.restartButton.addEventListener("click", () => this.restart());
     this.obstacleModels = obstacleModels;
@@ -31,13 +33,7 @@ export class Game {
       scene,
       this.obstacleModels
     );
-    this.scoreElement.style.display = "block";
-    this.onGameOver = () => {
-      destroyScene();
-      this.scoreElement.style.display = "none";
-      destroyPlayerControl();
-    };
-    animate(
+    const endAnimate = animate(
       scene,
       camera,
       renderer,
@@ -46,6 +42,16 @@ export class Game {
       obstacleController,
       this
     );
+
+    this.scoreElement.style.display = "block";
+    this.onGameOver = () => {
+      this.scoreElement.style.display = "none";
+      destroyPlayerControl();
+    };
+    this.beforeGameReset = () => {
+      endAnimate();
+      destroyScene();
+    };
   }
 
   showStartScreen() {
@@ -83,6 +89,7 @@ export class Game {
     this.gameStartTime = Date.now();
     this.gameOverScreen.style.display = "none";
     this.scoreElement.textContent = "0 M";
+    this.beforeGameReset();
     this.initGame();
   }
 }

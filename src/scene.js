@@ -5,6 +5,7 @@ export function initScene() {
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true, // 안티 앨리어싱 활성화
+    preserveDrawingBuffer: true,
   });
 
   renderer.shadowMap.enabled = true; // 그림자 활성화
@@ -126,12 +127,14 @@ export function animate(
   obstacleController,
   game
 ) {
+  let readyToDestroy = false;
   let lastTime = 0;
   let playerSpeed = 0.03; // 초기 속도
   const maxSpeed = 0.03;
   const minSpeed = 0.01;
   const acceleration = 0.0001;
   const deceleration = 0.00005;
+  let animationFrameId;
 
   let outOfBoundsTime = 0;
   const outOfBoundsLimit = 1000; // 1초 (밀리초 단위)
@@ -159,11 +162,18 @@ export function animate(
   }
 
   function render(currentTime) {
-    if (game.isGameOver) return;
+    if (readyToDestroy) {
+      return;
+    }
+
+    animationFrameId = requestAnimationFrame(render);
+
+    if (game.isGameOver) {
+      renderer.render(scene, camera);
+      return;
+    }
 
     const playerRadius = 0.3; // 플레이어의 대략적인 반경
-
-    requestAnimationFrame(render);
 
     if (!lastTime) {
       lastTime = currentTime;
@@ -176,6 +186,7 @@ export function animate(
     game.updateScore();
     const elapsedTime = game.getElapsedTime();
     obstacleController.update(player.position.z, elapsedTime, camera);
+    obstacleController.removeObstacles(player.position.z);
 
     const nearbyObstacles = obstacleController.getNearbyObstacles(
       player.position.z
@@ -183,7 +194,7 @@ export function animate(
 
     for (const obstacle of nearbyObstacles) {
       const distance = player.position.distanceTo(obstacle.position);
-      if (distance < playerRadius + 0.5) {
+      if (distance < playerRadius + 0.3) {
         game.gameOver();
         return;
       }
@@ -195,7 +206,7 @@ export function animate(
     updatePlayerSpeed(deltaTime, isTouching);
 
     // 플레이어와 카메라 이동
-    const moveDistance = playerSpeed * deltaTime;
+    const moveDistance = playerSpeed * deltaTime * (1 + elapsedTime / 100000);
     player.position.z -= moveDistance;
     camera.position.z -= moveDistance;
 
@@ -215,7 +226,6 @@ export function animate(
     if (isPlayerOutOfBounds(player, camera)) {
       outOfBoundsTime += deltaTime;
       if (outOfBoundsTime >= outOfBoundsLimit) {
-        console.log("Player out of bounds for too long!");
         game.gameOver("Out of bounds");
         return;
       }
@@ -226,5 +236,9 @@ export function animate(
     renderer.render(scene, camera);
   }
 
-  requestAnimationFrame(render);
+  animationFrameId = requestAnimationFrame(render);
+
+  return () => {
+    readyToDestroy = true;
+  };
 }
