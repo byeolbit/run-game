@@ -3,11 +3,11 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 const loader = new GLTFLoader();
 
 const obstacleModels = [
-  { name: "basket", path: "/resources/models/obstacles/bascket.gltf" },
-  { name: "ball", path: "/resources/models/obstacles/ball.gltf" },
-  { name: "drawer", path: "/resources/models/obstacles/drawer.gltf" },
-  { name: "plant2", path: "/resources/models/obstacles/plant2.gltf" },
-  { name: "table", path: "/resources/models/obstacles/table.gltf" },
+  { name: "basket", path: "./resources/models/obstacles/bascket.gltf" },
+  { name: "ball", path: "./resources/models/obstacles/ball.gltf" },
+  { name: "drawer", path: "./resources/models/obstacles/drawer.gltf" },
+  { name: "plant2", path: "./resources/models/obstacles/plant2.gltf" },
+  { name: "table", path: "./resources/models/obstacles/table.gltf" },
 ];
 
 function getRandomX() {

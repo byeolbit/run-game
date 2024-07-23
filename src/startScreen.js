@@ -78,7 +78,7 @@ export function createStartScreen(onStartGame) {
   scene.add(floor);
 
   const loader = new GLTFLoader();
-  loader.load("/resources/models/sb.gltf", (gltf) => {
+  loader.load("./resources/models/sb.gltf", (gltf) => {
     const playerModel = gltf.scene;
     playerModel.scale.set(0.5, 0.5, 0.5);
     playerModel.position.set(0, 0, 0);

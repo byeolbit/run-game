@@ -5,7 +5,7 @@ export function loadPlayerModel() {
   return new Promise((resolve, reject) => {
     const loader = new GLTFLoader();
     loader.load(
-      "/resources/models/sb.gltf",
+      "./resources/models/sb.gltf",
       function (gltf) {
         const playerModel = gltf.scene;
 

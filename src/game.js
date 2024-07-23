@@ -55,7 +55,7 @@ export class Game {
   }
 
   showStartScreen() {
-    createStartScreen(() => this.initGame());
+    createStartScreen(() => this.restart());
   }
 
   updateScore() {
